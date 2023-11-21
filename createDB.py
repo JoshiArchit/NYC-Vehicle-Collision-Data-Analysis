@@ -69,9 +69,21 @@ def createSchema(conn):
     """
     path = os.getcwd() + "//Motor_Vehicle_Collisions_-_Crashes_20231120.csv"
     dataframe = pd.read_csv(path, nrows=0)
-    columns = [(col, "varchar") for col in dataframe.columns]
-    columns = [(col.replace(' ', '_'), data_type) for col, data_type in
-               columns]
+    # columns = [(col, "varchar") for col in dataframe.columns]
+    # columns = [(col.replace(' ', '_'), data_type) for col, data_type in
+    #            columns]
+    # # Date type for crash_date
+    # for col in columns:
+    #     if col[0] == 'crash_date':
+    #         col[1] = 'date'
+
+    # Add '_' between column names and assign varchar datatype, set crash_date
+    # to date type
+    columns = [
+        (col.replace(' ', '_'),
+         'date' if col == 'crash_date' else 'varchar')
+        for col in dataframe.columns
+    ]
 
     # Create table with data
     try:
