@@ -132,9 +132,9 @@ def filterLongitudeLatitude(connection):
 def main():
     conn = connectDB()
     analyse_borough = "BROOKLYN"
-    # loadData(conn)
-    # print(filterBoroughs(conn, analyse_borough))
-    # print(filterTime(conn))
+    loadData(conn)
+    print(filterBoroughs(conn, analyse_borough))
+    print(filterTime(conn))
     print(filterLongitudeLatitude(conn))
 
 
