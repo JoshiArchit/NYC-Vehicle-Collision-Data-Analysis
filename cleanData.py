@@ -128,14 +128,23 @@ def filterLongitudeLatitude(connection):
     return "== Null latitude and longitude values removed. =="
 
 
+def cleanData(connection, borough):
+    """
+    Wrapper function to call the other functions that clean the data.
+    :param connection: database connection object
+    :param borough: borough to analyse data for
+    :return: None
+    """
+    print(filterBoroughs(connection, borough))
+    print(filterTime(connection))
+    print(filterLongitudeLatitude(connection))
+
 
 def main():
     conn = connectDB()
     analyse_borough = "BROOKLYN"
     loadData(conn)
-    print(filterBoroughs(conn, analyse_borough))
-    print(filterTime(conn))
-    print(filterLongitudeLatitude(conn))
+    cleanData(conn, analyse_borough)
 
 
 if __name__ == "__main__":
