@@ -80,7 +80,7 @@ def filterBoroughs(connection, borough):
         return False
     connection.commit()
     connection.cursor().close()
-    return True
+    return f"== Boroughs other than {borough} removed from data =="
 
 
 def filterTime(connection):
@@ -107,15 +107,35 @@ def filterTime(connection):
     connection.commit()
     connection.cursor().close()
 
-    return "Records beyond summer 2019 and summer 2020 deleted."
+    return "== Records beyond summer 2019 and summer 2020 deleted. =="
+
+
+def filterLongitudeLatitude(connection):
+    """
+    Helper function to filter data and remove null longitude and latitude values.
+
+    :param connection: database connection object
+    :return: None
+    """
+    remove_nulls = "DELETE FROM nyc_crashes WHERE longitude is null or latitude is null"
+    try:
+        connection.cursor().execute(remove_nulls)
+    except psycopg2.Error as e:
+        print(f"Error while removing nulls : {e}")
+        return False
+    connection.commit()
+    connection.cursor().close()
+    return "== Null latitude and longitude values removed. =="
+
 
 
 def main():
     conn = connectDB()
     analyse_borough = "BROOKLYN"
     # loadData(conn)
-    # filterBoroughs(conn, analyse_borough)
-    filterTime(conn)
+    # print(filterBoroughs(conn, analyse_borough))
+    # print(filterTime(conn))
+    print(filterLongitudeLatitude(conn))
 
 
 if __name__ == "__main__":
