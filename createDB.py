@@ -1,7 +1,8 @@
 """
 Filename : loadData.py
-Author : Archit Joshi
-Description :
+Author : Archit Joshi, Parth Sethia
+Description : Creating database and schema for NYC Crash data
+Data Set: https://data.cityofnewyork.us/Public-Safety/NYPD-Motor-Vehicle-Collisions/h9gi-nx95
 Language : python3
 """
 import os
@@ -69,21 +70,15 @@ def createSchema(conn):
     """
     path = os.getcwd() + "//Motor_Vehicle_Collisions_-_Crashes_20231120.csv"
     dataframe = pd.read_csv(path, nrows=0)
-    # columns = [(col, "varchar") for col in dataframe.columns]
-    # columns = [(col.replace(' ', '_'), data_type) for col, data_type in
-    #            columns]
-    # # Date type for crash_date
-    # for col in columns:
-    #     if col[0] == 'crash_date':
-    #         col[1] = 'date'
 
-    # Add '_' between column names and assign varchar datatype, set crash_date
+    # Add '_' between column names and assign varchar datatype, set 'CRASH_DATE'
     # to date type
     columns = [
         (col.replace(' ', '_'),
-         'date' if col == 'crash_date' else 'varchar')
+         'date' if 'DATE' in col else 'varchar')
         for col in dataframe.columns
     ]
+    print(columns)
 
     # Create table with data
     try:

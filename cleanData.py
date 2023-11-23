@@ -1,9 +1,10 @@
 """
 Filename : loadData.py
-Author : Archit Joshi
-Description :
+Author : Archit Joshi, Parth Sethia
+Description : Cleaning NYC Crash data for outliers, missing data.
 Language : python3
 """
+
 import os
 import psycopg2
 import pandas as pd
@@ -45,12 +46,13 @@ def loadData(connection):
     path = os.getcwd() + "//Motor_Vehicle_Collisions_-_Crashes_20231120.csv"
     copy_query = f"COPY nyc_crashes from \'{path}\' DELIMITER ',' CSV HEADER"
     try:
-        cursor = connection.cursor()
-        cursor.execute(copy_query)
+        connection.cursor().execute(copy_query)
         connection.commit()
     except psycopg2.Error as e:
         print(f"ERROR in loading data : {e}")
         return False
+
+    connection.cursor().close()
     return "== Data loaded =="
 
 
@@ -90,16 +92,29 @@ def filterTime(connection):
     :param connection: database connection object
     :return: None
     """
-    filter_dates_2019 = "DELETE FROM nyc_crashes WHERE crash_date NOT BETWEEN '06/01/2019' AND '07/31/2019'"
-    try:
-        connection.cursor().execute(filter_dates_2019)
-    except psycopg2.Error as e:
-        print(f"Filtering for year 2019 failed: {e}")
-        return False
+    # filter_dates_2019 = "DELETE FROM nyc_crashes WHERE crash_date NOT BETWEEN '2019-06-01' AND '2019-07-31'"
+    # try:
+    #     connection.cursor().execute(filter_dates_2019)
+    # except psycopg2.Error as e:
+    #     print(f"Filtering for year 2019 failed: {e}")
+    #     return False
+    #
+    # filter_dates_2020 = "DELETE FROM nyc_crashes WHERE crash_date NOT BETWEEN '2020-06-01' AND '2020-07-31'"
+    # try:
+    #     connection.cursor().execute(filter_dates_2020)
+    # except psycopg2.Error as e:
+    #     print(f"Filtering for year 2020 failed: {e}")
+    #     return False
 
-    filter_dates_2020 = "DELETE FROM nyc_crashes WHERE crash_date NOT BETWEEN '06/01/2020' AND '07/31/2020'"
+    filter_dates = """
+    DELETE FROM nyc_crashes
+    WHERE 
+        (crash_date NOT BETWEEN '2019-06-01' AND '2019-07-31')
+        AND 
+        (crash_date NOT BETWEEN '2020-06-01' AND '2020-07-31');
+"""
     try:
-        connection.cursor().execute(filter_dates_2020)
+        connection.cursor().execute(filter_dates)
     except psycopg2.Error as e:
         print(f"Filtering for year 2020 failed: {e}")
         return False
@@ -136,14 +151,14 @@ def cleanData(connection, borough):
     :return: None
     """
     print(filterBoroughs(connection, borough))
-    print(filterTime(connection))
     print(filterLongitudeLatitude(connection))
+    print(filterTime(connection))
 
 
 def main():
     conn = connectDB()
     analyse_borough = "BROOKLYN"
-    loadData(conn)
+    # loadData(conn)
     cleanData(conn, analyse_borough)
 
 
