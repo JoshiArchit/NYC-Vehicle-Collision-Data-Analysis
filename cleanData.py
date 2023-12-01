@@ -43,7 +43,7 @@ def loadData(connection):
     :return: None
     """
     # Load data with all attributes
-    path = os.getcwd() + "//Motor_Vehicle_Collisions_-_Crashes_20231120.csv"
+    path = os.getcwd() + "\\Motor_Vehicle_Collisions_-_Crashes_20231125.csv"
     copy_query = f"COPY nyc_crashes from \'{path}\' DELIMITER ',' CSV HEADER"
     try:
         connection.cursor().execute(copy_query)
@@ -92,19 +92,7 @@ def filterTime(connection):
     :param connection: database connection object
     :return: None
     """
-    # filter_dates_2019 = "DELETE FROM nyc_crashes WHERE crash_date NOT BETWEEN '2019-06-01' AND '2019-07-31'"
-    # try:
-    #     connection.cursor().execute(filter_dates_2019)
-    # except psycopg2.Error as e:
-    #     print(f"Filtering for year 2019 failed: {e}")
-    #     return False
-    #
-    # filter_dates_2020 = "DELETE FROM nyc_crashes WHERE crash_date NOT BETWEEN '2020-06-01' AND '2020-07-31'"
-    # try:
-    #     connection.cursor().execute(filter_dates_2020)
-    # except psycopg2.Error as e:
-    #     print(f"Filtering for year 2020 failed: {e}")
-    #     return False
+
 
     filter_dates = """
     DELETE FROM nyc_crashes
@@ -140,6 +128,16 @@ def filterLongitudeLatitude(connection):
         return False
     connection.commit()
     connection.cursor().close()
+
+    remove_zeroes = "DELETE FROM nyc_crashes WHERE cast(longitude as float) = 0 or cast(latitude as float) = 0"
+    try:
+        connection.cursor().execute(remove_zeroes)
+    except psycopg2.Error as e:
+        print(f"Error while removing nulls : {e}")
+        return False
+    connection.commit()
+    connection.cursor().close()
+
     return "== Null latitude and longitude values removed. =="
 
 
@@ -158,7 +156,7 @@ def cleanData(connection, borough):
 def main():
     conn = connectDB()
     analyse_borough = "BROOKLYN"
-    # loadData(conn)
+    loadData(conn)
     cleanData(conn, analyse_borough)
 
 
