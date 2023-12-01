@@ -44,7 +44,7 @@ def loadData(connection):
     """
     # Load data with all attributes
     path = os.getcwd() + "\\Motor_Vehicle_Collisions_-_Crashes_20231125.csv"
-    copy_query = f"COPY nyc_crashes from \'{path}\' DELIMITER ',' CSV HEADER"
+    copy_query = f" SET datestyle = 'ISO, MDY'; COPY nyc_crashes from \'{path}\' DELIMITER ',' CSV HEADER"
     try:
         connection.cursor().execute(copy_query)
         connection.commit()
