@@ -7,6 +7,7 @@ Language : python3
 
 import folium
 from folium.plugins import HeatMap
+from folium.plugins import MarkerCluster
 import psycopg2
 import seaborn as sns
 import pandas as pd
@@ -91,12 +92,44 @@ def generateHeatMap(data, year):
     # Save or display the map
     m.save(f"heatmap_{year}.html")
 
+
+def clusterData(data, year):
+    # Convert latitude and longitude columns to float
+    data['latitude'] = data['latitude'].astype(float)
+    data['longitude'] = data['longitude'].astype(float)
+
+    # Extract necessary columns
+    data = data[['latitude', 'longitude']].dropna().values.tolist()
+
+    # Create a base map centered at an average location
+    m = folium.Map(location=[sum(p[0] for p in data) / len(data),
+                             sum(p[1] for p in data) / len(data)],
+                   zoom_start=12)
+
+    # Convert the data into a format that MarkerCluster can understand
+    marker_data = [[point[0], point[1]] for point in data]
+
+    # Create a MarkerCluster layer
+    marker_cluster = MarkerCluster().add_to(m)
+
+    # Add markers to the MarkerCluster
+    for point in marker_data:
+        folium.Marker(location=[point[0], point[1]],
+                      popup=f"Location: {point[0]}, {point[1]}").add_to(
+            marker_cluster)
+
+    # Save or display the map
+    m.save(f"clustered_map_{year}.html")
+
 def main():
     dataframe = connectDB()
     # Sort data into 2019 data and 2020 data
     crash_data_2019, crash_data_2020 = seperateData(dataframe)
-    generateHeatMap(crash_data_2019, '2019')
-    generateHeatMap(crash_data_2020, '2020')
+    # generateHeatMap(crash_data_2019, '2019')
+    # generateHeatMap(crash_data_2020, '2020')
+    clusterData(crash_data_2020, '2019')
+    clusterData(crash_data_2019, '2020')
+
 
 
 if __name__ == "__main__":
