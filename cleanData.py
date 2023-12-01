@@ -65,16 +65,19 @@ def filterBoroughs(connection, borough):
     :param borough: New york borough to analyse
     :return: Success message if query worked
     """
-    # Filter data for only one borough - BROOKLYN
-    delete_query = f"DELETE FROM nyc_crashes WHERE borough != '{borough}'"
+    # Filter data for only one borough - BROOKLYN and push to new table
+    delete_boroughs = f"""
+            CREATE TABLE clean_nyc_crashes AS
+            SELECT * FROM nyc_crashes WHERE borough = '{borough}'
+        """
     try:
-        connection.cursor().execute(delete_query)
+        connection.cursor().execute(delete_boroughs)
     except psycopg2.Error as e:
         print(f"Error encountered : {e}")
         return False
 
     # Delete entries with null as boroughs
-    delete_null_boroughs = "DELETE FROM nyc_crashes WHERE borough is null"
+    delete_null_boroughs = "DELETE FROM clean_nyc_crashes WHERE borough is null"
     try:
         connection.cursor().execute(delete_null_boroughs)
     except psycopg2.Error as e:
@@ -93,9 +96,8 @@ def filterTime(connection):
     :return: None
     """
 
-
     filter_dates = """
-    DELETE FROM nyc_crashes
+    DELETE FROM clean_nyc_crashes
     WHERE 
         (crash_date NOT BETWEEN '2019-06-01' AND '2019-07-31')
         AND 
@@ -120,7 +122,7 @@ def filterLongitudeLatitude(connection):
     :param connection: database connection object
     :return: None
     """
-    remove_nulls = "DELETE FROM nyc_crashes WHERE longitude is null or latitude is null"
+    remove_nulls = "DELETE FROM clean_nyc_crashes WHERE longitude is null or latitude is null"
     try:
         connection.cursor().execute(remove_nulls)
     except psycopg2.Error as e:
@@ -129,7 +131,7 @@ def filterLongitudeLatitude(connection):
     connection.commit()
     connection.cursor().close()
 
-    remove_zeroes = "DELETE FROM nyc_crashes WHERE cast(longitude as float) = 0 or cast(latitude as float) = 0"
+    remove_zeroes = "DELETE FROM clean_nyc_crashes WHERE cast(longitude as float) = 0 or cast(latitude as float) = 0"
     try:
         connection.cursor().execute(remove_zeroes)
     except psycopg2.Error as e:
@@ -148,6 +150,7 @@ def cleanData(connection, borough):
     :param borough: borough to analyse data for
     :return: None
     """
+    # Clean data and push to new table
     print(filterBoroughs(connection, borough))
     print(filterLongitudeLatitude(connection))
     print(filterTime(connection))
