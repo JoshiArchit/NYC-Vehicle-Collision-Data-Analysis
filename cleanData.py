@@ -144,15 +144,7 @@ def filterLongitudeLatitude(connection):
     return "== Null latitude and longitude values removed. =="
 
 
-def cleanData(connection, borough):
-    """
-    Wrapper function to call the other functions that clean the data.
-    :param connection: database connection object
-    :param borough: borough to analyse data for
-    :return: None
-    """
-    # Delete old table if it already exists
-    # Check if the table exists
+def wipeOldTable(connection):
     cursor = connection.cursor()
     table_name = 'clean_nyc_crashes'
     cursor.execute(sql.SQL(
@@ -165,8 +157,21 @@ def cleanData(connection, borough):
         cursor.execute(
             sql.SQL("DROP TABLE {}").format(sql.Identifier(table_name)))
         print(f"Table '{table_name}' has been deleted.")
+        connection.commit()
+        cursor.close()
     else:
         print(f"Table '{table_name}' does not exist.")
+
+
+def cleanData(connection, borough):
+    """
+    Wrapper function to call the other functions that clean the data.
+    :param connection: database connection object
+    :param borough: borough to analyse data for
+    :return: None
+    """
+    # Delete old table if it already exists
+    wipeOldTable(connection)
 
     # Clean data and push to new table
     print(filterBoroughs(connection, borough))
@@ -177,7 +182,7 @@ def cleanData(connection, borough):
 def main():
     conn = connectDB()
     analyse_borough = "BROOKLYN"
-    loadData(conn)
+    # loadData(conn)
     cleanData(conn, analyse_borough)
 
 
