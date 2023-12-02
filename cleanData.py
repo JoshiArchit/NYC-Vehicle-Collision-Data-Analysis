@@ -182,7 +182,7 @@ def cleanData(connection, borough):
 def main():
     conn = connectDB()
     analyse_borough = "BROOKLYN"
-    # loadData(conn)
+    loadData(conn)
     cleanData(conn, analyse_borough)
 
 
