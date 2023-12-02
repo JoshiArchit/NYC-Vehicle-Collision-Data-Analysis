@@ -171,14 +171,16 @@ def kMeansClustering(data, year):
     plt.title(f'K-Means Clustering of Car Crashes (k={k}) for year {year}')
     plt.xlabel('Longitude')
     plt.ylabel('Latitude')
-    plt.colorbar(label='Cluster')
     plt.show()
 
 
 def main():
     dataframe = connectDB()
+
     # Sort data into 2019 data and 2020 data
     crash_data_2019, crash_data_2020 = separateData(dataframe)
+
+    # Data visualization and clustering
     generateHeatMap(crash_data_2019, '2019')
     generateHeatMap(crash_data_2020, '2020')
     clusterData(crash_data_2020, '2019')
