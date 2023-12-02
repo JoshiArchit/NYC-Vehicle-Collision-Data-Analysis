@@ -181,10 +181,10 @@ def main():
     crash_data_2019, crash_data_2020 = separateData(dataframe)
 
     # Data visualization and clustering
-    # generateHeatMap(crash_data_2019, '2019')
-    # generateHeatMap(crash_data_2020, '2020')
-    # clusterData(crash_data_2020, '2019')
-    # clusterData(crash_data_2019, '2020')
+    generateHeatMap(crash_data_2019, '2019')
+    generateHeatMap(crash_data_2020, '2020')
+    clusterData(crash_data_2020, '2019')
+    clusterData(crash_data_2019, '2020')
     kMeansClustering(crash_data_2019, '2019')
     kMeansClustering(crash_data_2020, '2020')
 
