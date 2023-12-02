@@ -100,7 +100,7 @@ def filterTime(connection):
     DELETE FROM clean_nyc_crashes
     WHERE 
         (crash_date NOT BETWEEN '2019-06-01' AND '2019-07-31')
-        AND 
+        OR
         (crash_date NOT BETWEEN '2020-06-01' AND '2020-07-31');
 """
     try:
