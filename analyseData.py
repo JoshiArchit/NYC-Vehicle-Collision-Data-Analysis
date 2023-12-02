@@ -99,7 +99,9 @@ def generateHeatMap(data, year):
         m)
 
     # Save the map
-    m.save(f"heatmap_{year}.html")
+    filename = f"heatmap_{year}.html"
+    m.save(filename)
+    print(f"{filename} generated and saved successfully")
 
 
 def clusterData(data, year):
@@ -135,7 +137,9 @@ def clusterData(data, year):
             marker_cluster)
 
     # Save the map
-    m.save(f"clustered_map_{year}.html")
+    filename = f"clustered_map_{year}.html"
+    m.save(filename)
+    print(f"{filename} generated and saved successfully")
 
 
 def kMeansClustering(data, year):
