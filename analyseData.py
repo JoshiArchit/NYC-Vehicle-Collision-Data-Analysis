@@ -6,13 +6,13 @@ Language : python3
 """
 
 import folium
-from folium.plugins import HeatMap
-from folium.plugins import MarkerCluster
 import psycopg2
-import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
 from branca.colormap import linear
+from sklearn.cluster import KMeans
+from folium.plugins import HeatMap
+from folium.plugins import MarkerCluster
 
 
 def connectDB():
@@ -34,13 +34,14 @@ def connectDB():
         conn = psycopg2.connect(database=database, user=username,
                                 password=password, host=host,
                                 port=port)
-        data = pd.read_sql("SELECT * FROM nyc_crashes", conn)
+        data = pd.read_sql("SELECT * FROM clean_nyc_crashes", conn)
         return data
     except psycopg2.Error as e:
-        print("Connection error, check credentials or run createDB.py")
+        print(
+            f"Connection error, check credentials or run createDB.py --> {e}")
 
 
-def seperateData(data):
+def separateData(data):
     """
     Function to split the filtered database data into 2019 and 2020 data for
     comparison and analysis.
@@ -66,6 +67,13 @@ def seperateData(data):
 
 
 def generateHeatMap(data, year):
+    """
+    Function to visualize the data as a heatmap using the folium library.
+
+    :param data: cleaned nyc crash data
+    :param year: year value (2019/2020)
+    :return: None
+    """
     # Convert latitude and longitude columns to float
     data['latitude'] = data['latitude'].astype(float)
     data['longitude'] = data['longitude'].astype(float)
@@ -86,14 +94,22 @@ def generateHeatMap(data, year):
     m.add_child(color_scale)
 
     # Create HeatMap layer
-    HeatMap(heat_data, gradient={0.4: 'blue', 0.65: 'lime', 1: 'red'}, opacity=0.4).add_to(
+    HeatMap(heat_data, gradient={0.4: 'blue', 0.65: 'lime', 1: 'red'},
+            opacity=0.4).add_to(
         m)
 
-    # Save or display the map
+    # Save the map
     m.save(f"heatmap_{year}.html")
 
 
 def clusterData(data, year):
+    """
+    Using folium to perform clustering on terrain map of Brooklyn.
+
+    :param data: cleaned nyc crash data
+    :param year: year value (2019/2020)
+    :return: None
+    """
     # Convert latitude and longitude columns to float
     data['latitude'] = data['latitude'].astype(float)
     data['longitude'] = data['longitude'].astype(float)
@@ -118,18 +134,53 @@ def clusterData(data, year):
                       popup=f"Location: {point[0]}, {point[1]}").add_to(
             marker_cluster)
 
-    # Save or display the map
+    # Save the map
     m.save(f"clustered_map_{year}.html")
+
+
+def kMeansClustering(data, year):
+    """
+    Function to perform k-means clustering on the data.
+
+    :param data: cleaned nyc crash data
+    :param year: year value (2019/2020)
+    :return: None
+    """
+    # Convert latitude and longitude columns to float with high precision
+    data['latitude'] = data['latitude'].astype(float)
+    data['longitude'] = data['longitude'].astype(float)
+
+    # Extract necessary columns
+    data_1 = data[['latitude', 'longitude']]
+
+    # Specify the number of clusters (adjust as needed)
+    k = 3
+
+    # Perform K-Means clustering
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    data['cluster'] = kmeans.fit_predict(data_1)
+
+    # Visualize the clusters
+    plt.figure(figsize=(12, 8))
+    plt.scatter(data['longitude'], data['latitude'], c=data['cluster'],
+                cmap='viridis', s=50, edgecolors='black')
+    plt.title(f'K-Means Clustering of Car Crashes (k={k}) for year {year}')
+    plt.xlabel('Longitude')
+    plt.ylabel('Latitude')
+    plt.colorbar(label='Cluster')
+    plt.show()
+
 
 def main():
     dataframe = connectDB()
     # Sort data into 2019 data and 2020 data
-    crash_data_2019, crash_data_2020 = seperateData(dataframe)
-    # generateHeatMap(crash_data_2019, '2019')
-    # generateHeatMap(crash_data_2020, '2020')
+    crash_data_2019, crash_data_2020 = separateData(dataframe)
+    generateHeatMap(crash_data_2019, '2019')
+    generateHeatMap(crash_data_2020, '2020')
     clusterData(crash_data_2020, '2019')
     clusterData(crash_data_2019, '2020')
-
+    kMeansClustering(crash_data_2019, '2019')
+    kMeansClustering(crash_data_2020, '2020')
 
 
 if __name__ == "__main__":
