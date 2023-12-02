@@ -9,28 +9,22 @@ import os
 import psycopg2
 import pandas as pd
 import numpy as np
+import config_template
 
-
-#
-# def parseData():
-#     path = os.getcwd() + "//Motor_Vehicle_Collisions_-_Crashes_20231120.csv"
-#     borough = "BROOKLYN"
-#     dataframe = pd.read_csv(path, query=f'BOROUGH == "{borough}"')
-#     print(len(dataframe))
 
 def databaseConnection():
     """
     Helper function to connect to a database db_720 to load NYC Crash data to.
     If database doesn't exist, the function will create the database and
-    re-attempt to estabilish connection.
+    re-attempt to establish connection.
 
     :return: database connection object
     """
     host = 'localhost'
     username = 'postgres'
-    password = 'Archit@2904'
+    password = config_template.DB_PASSWORD
     port = '5432'
-    database = 'db_720'
+    database = config_template.DB_NAME
 
     try:
         # Attempt to connect to the existing database
@@ -68,7 +62,7 @@ def createSchema(conn):
     :param conn: database connection object
     :return: None
     """
-    path = os.getcwd() + "//Motor_Vehicle_Collisions_-_Crashes_20231120.csv"
+    path = os.getcwd() + "\\Motor_Vehicle_Collisions_-_Crashes_20231125.csv"
     dataframe = pd.read_csv(path, nrows=0)
 
     # Add '_' between column names and assign varchar datatype, set 'CRASH_DATE'
@@ -78,8 +72,6 @@ def createSchema(conn):
          'date' if 'DATE' in col else 'varchar')
         for col in dataframe.columns
     ]
-    print(columns)
-
     # Create table with data
     try:
         cursor = conn.cursor()
@@ -87,14 +79,38 @@ def createSchema(conn):
         cursor.execute(create_table)
         conn.commit()
         cursor.close()
-        conn.close()
     except psycopg2.Error as e:
         print(f"Table already exists. No action taken.\nError Message --> {e}")
+        return False
+    print("== Schema Created ==")
+
+
+def loadData(connection):
+    """
+    Function to load data from csv file into database.
+
+    :param connection: database connection object
+    :return: None
+    """
+    # Load data with all attributes
+    path = os.getcwd() + "\\Motor_Vehicle_Collisions_-_Crashes_20231125.csv"
+    copy_query = f" SET datestyle = 'ISO, MDY'; COPY nyc_crashes from \'{path}\' DELIMITER ',' CSV HEADER"
+    try:
+        connection.cursor().execute(copy_query)
+        connection.commit()
+    except psycopg2.Error as e:
+        print(f"ERROR in loading data : {e}")
+        return False
+
+    connection.cursor().close()
+    print("== Data loaded ==")
 
 
 def main():
     connection = databaseConnection()
     createSchema(connection)
+    loadData(connection)
+    connection.close()
 
 
 if __name__ == "__main__":
