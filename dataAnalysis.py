@@ -304,12 +304,12 @@ def main():
                             message="pandas only supports SQLAlchemy connectable.*")
     dataframe = pd.read_sql("SELECT * FROM nyc_crashes", conn)
     crash_data_2019, crash_data_2020 = separateData(dataframe)
-    # dataChangeByZipcodeFromTwoYears(crash_data_2019, crash_data_2020)
+    dataChangeByZipcodeFromTwoYears(crash_data_2019, crash_data_2020)
     dataChangeByTimeFrameFromTwoYears(crash_data_2019, crash_data_2020)
-    # top100ConsecutiveDaysWithMostAccidents(conn)
-    # dayWithMostAccidents(conn)
-    # hourWithMostAccidents(conn)
-    # twelveDaysWithMostAccidentsIn2020(conn)
+    top100ConsecutiveDaysWithMostAccidents(conn)
+    dayWithMostAccidents(conn)
+    hourWithMostAccidents(conn)
+    twelveDaysWithMostAccidentsIn2020(conn)
 
 
 if __name__ == '__main__':
