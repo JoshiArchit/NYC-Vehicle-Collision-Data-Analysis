@@ -80,9 +80,9 @@ def filterTime(connection):
     filter_dates = """
     DELETE FROM clean_nyc_crashes
     WHERE NOT 
-        ((crash_date BETWEEN '2019-06-01' AND '2019-07-31')
+        ((crash_date BETWEEN '2019-01-01' AND '2019-12-31')
         OR
-        (crash_date BETWEEN '2020-06-01' AND '2020-07-31'));
+        (crash_date BETWEEN '2020-01-01' AND '2020-12-31'));
 """
     try:
         connection.cursor().execute(filter_dates)
@@ -93,7 +93,7 @@ def filterTime(connection):
     connection.commit()
     connection.cursor().close()
 
-    return "== Records beyond summer 2019 and summer 2020 deleted. =="
+    return "== Records beyond 2019 and 2020 deleted. =="
 
 
 def filterLongitudeLatitude(connection):
