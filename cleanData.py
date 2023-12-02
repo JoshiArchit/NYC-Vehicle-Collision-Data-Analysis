@@ -10,6 +10,7 @@ import psycopg2
 from psycopg2 import sql
 import pandas as pd
 import numpy as np
+import config_template
 
 
 def connectDB():
@@ -22,9 +23,9 @@ def connectDB():
     """
     host = 'localhost'
     username = 'postgres'
-    password = 'Archit@2904'
+    password = config_template.DB_PASSWORD
     port = '5432'
-    database = 'db_720'
+    database = config_template.DB_NAME
 
     try:
         # Attempt to connect to the existing database
@@ -34,27 +35,6 @@ def connectDB():
         return conn
     except psycopg2.Error as e:
         print("Connection error, check credentials or run createDB.py")
-
-
-def loadData(connection):
-    """
-    Function to load data from csv file into database.
-
-    :param connection: database connection object
-    :return: None
-    """
-    # Load data with all attributes
-    path = os.getcwd() + "\\Motor_Vehicle_Collisions_-_Crashes_20231125.csv"
-    copy_query = f" SET datestyle = 'ISO, MDY'; COPY nyc_crashes from \'{path}\' DELIMITER ',' CSV HEADER"
-    try:
-        connection.cursor().execute(copy_query)
-        connection.commit()
-    except psycopg2.Error as e:
-        print(f"ERROR in loading data : {e}")
-        return False
-
-    connection.cursor().close()
-    return "== Data loaded =="
 
 
 def filterBoroughs(connection, borough):
@@ -182,7 +162,6 @@ def cleanData(connection, borough):
 def main():
     conn = connectDB()
     analyse_borough = "BROOKLYN"
-    loadData(conn)
     cleanData(conn, analyse_borough)
 
 
