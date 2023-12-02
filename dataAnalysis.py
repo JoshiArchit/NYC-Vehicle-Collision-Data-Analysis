@@ -4,11 +4,12 @@ Author : Archit Joshi, Parth Sethia
 Description : Analysis of the NYC crash dataset
 Language : python3
 """
+from config_template import DB_PASSWORD, DB_NAME
 import warnings
 import psycopg2
 import pandas as pd
 from matplotlib import pyplot as plt
-from analyseData import separateData
+from visualiseData import separateData
 import matplotlib.patches as mpatches
 
 
@@ -22,9 +23,9 @@ def connectDB():
     """
     host = 'localhost'
     username = 'postgres'
-    password = 'Archit@2904'
+    password = DB_PASSWORD
     port = '5432'
-    database = 'db_720'
+    database = DB_NAME
 
     try:
         # Attempt to connect to the existing database
@@ -45,7 +46,7 @@ def dayWithMostAccidents(connection):
     # aggregation script to find the day which has maximum number of accidents
     aggregation_script = "select trim(to_char(crash_date, 'Day')) as Day, " \
                          "count(*) as count " \
-                         "from nyc_crashes " \
+                         "from clean_nyc_crashes " \
                          "group by Day " \
                          "order by count desc"
     try:
@@ -70,7 +71,7 @@ def hourWithMostAccidents(connection):
     # aggregation script to find the hour of the day which has most number of accidents
     aggregation_script = "select trim(split_part(crash_time, ':', 1)) as hour, " \
                          "count(*) as count " \
-                         "from nyc_crashes " \
+                         "from clean_nyc_crashes " \
                          "group by hour " \
                          "order by count desc;"
     try:
@@ -94,15 +95,10 @@ def twelveDaysWithMostAccidentsIn2020(connection):
     """
 
     # aggregation script to calculate top 12 days of 2020 which had most number of accidents
-    aggregation_script = "select case " \
-                         "when extract(Month from x.crash_date)=7 then concat('July ', extract(Day from x.crash_date)) " \
-                         "when extract(Month from x.crash_date) =6 then concat('June ', extract(Day from x.crash_date)) " \
-                         "end from (" \
-                         "select crash_date, count(*) as count from nyc_crashes " \
+    aggregation_script = "select crash_date, count(*) as count from clean_nyc_crashes " \
                          "where extract(year from crash_date) = '2020' " \
                          "group by crash_date " \
-                         "order by count desc limit 12) x " \
-                         "order by x.crash_date;"
+                         "order by count desc limit 12;"
     try:
         connection_cursor = connection.cursor()
         connection_cursor.execute(aggregation_script)
@@ -111,19 +107,9 @@ def twelveDaysWithMostAccidentsIn2020(connection):
         print(e)
         return False
     connection.cursor().close()
-    # initialization
-    june = []
-    july = []
-    # removing the name of month from the date
-    for days in result:
-        if 'June' in days[0]:
-            june.append(days[0].replace("June ", ""))
-        elif "July" in days[0]:
-            july.append(days[0].replace("July ", ""))
     print(
         "7. In the year 2020, which 12 days had the most accidents?\nCan you speculate about why this is?")
-    print("Ans: ", ", ".join(day for day in june), "June", "\n     ",
-          ", ".join(day for day in july), "July")
+    print("Ans: ", ", ".join(str(date_object) for date_object, number in result))
 
 
 def top100ConsecutiveDaysWithMostAccidents(connection):
@@ -135,7 +121,7 @@ def top100ConsecutiveDaysWithMostAccidents(connection):
     # aggregation script to count accidents on every day
     aggregation_script = "select crash_date, " \
                          "count(*) as number_of_crash " \
-                         "from nyc_crashes " \
+                         "from clean_nyc_crashes " \
                          "where crash_date between '2019-01-01' and '2020-10-31' " \
                          "group by crash_date " \
                          "order by crash_date;"
@@ -302,7 +288,7 @@ def main():
     conn = connectDB()
     warnings.filterwarnings("ignore",
                             message="pandas only supports SQLAlchemy connectable.*")
-    dataframe = pd.read_sql("SELECT * FROM nyc_crashes", conn)
+    dataframe = pd.read_sql("SELECT * FROM clean_nyc_crashes", conn)
     crash_data_2019, crash_data_2020 = separateData(dataframe)
     dataChangeByZipcodeFromTwoYears(crash_data_2019, crash_data_2020)
     dataChangeByTimeFrameFromTwoYears(crash_data_2019, crash_data_2020)
