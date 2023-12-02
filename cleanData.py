@@ -7,6 +7,7 @@ Language : python3
 
 import os
 import psycopg2
+from psycopg2 import sql
 import pandas as pd
 import numpy as np
 
@@ -98,10 +99,10 @@ def filterTime(connection):
 
     filter_dates = """
     DELETE FROM clean_nyc_crashes
-    WHERE 
-        (crash_date NOT BETWEEN '2019-06-01' AND '2019-07-31')
+    WHERE NOT 
+        ((crash_date BETWEEN '2019-06-01' AND '2019-07-31')
         OR
-        (crash_date NOT BETWEEN '2020-06-01' AND '2020-07-31');
+        (crash_date BETWEEN '2020-06-01' AND '2020-07-31'));
 """
     try:
         connection.cursor().execute(filter_dates)
@@ -150,6 +151,23 @@ def cleanData(connection, borough):
     :param borough: borough to analyse data for
     :return: None
     """
+    # Delete old table if it already exists
+    # Check if the table exists
+    cursor = connection.cursor()
+    table_name = 'clean_nyc_crashes'
+    cursor.execute(sql.SQL(
+        "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = %s)"),
+                   (table_name,))
+    table_exists = cursor.fetchone()[0]
+
+    # If the table exists, drop it
+    if table_exists:
+        cursor.execute(
+            sql.SQL("DROP TABLE {}").format(sql.Identifier(table_name)))
+        print(f"Table '{table_name}' has been deleted.")
+    else:
+        print(f"Table '{table_name}' does not exist.")
+
     # Clean data and push to new table
     print(filterBoroughs(connection, borough))
     print(filterLongitudeLatitude(connection))
