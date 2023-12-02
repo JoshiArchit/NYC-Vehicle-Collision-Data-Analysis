@@ -136,7 +136,7 @@ def wipeOldTable(connection):
     if table_exists:
         cursor.execute(
             sql.SQL("DROP TABLE {}").format(sql.Identifier(table_name)))
-        print(f"Table '{table_name}' has been deleted.")
+        print(f"Table '{table_name}' has been deleted. New one will be created")
         connection.commit()
         cursor.close()
     else:
