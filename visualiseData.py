@@ -1,7 +1,8 @@
 """
 Filename : analyseData.py
-Author : Archit Joshi
-Description : Clustering, classifying and everything else.
+Author : Archit Joshi,
+Description : Script to visualize NYC crash data using k-means clustering, folium and generating
+heatmaps and cluster maps.
 Language : python3
 """
 

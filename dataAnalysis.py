@@ -1,16 +1,16 @@
 """
 Filename : dataAnalysis.py
-Author : Archit Joshi, Parth Sethia
+Author : Archit Joshi (aj6082), Parth Sethia
 Description : Analysis of the NYC crash dataset
 Language : python3
 """
-from config_template import DB_PASSWORD, DB_NAME
 import warnings
+import config_template
 import psycopg2
 import pandas as pd
-from matplotlib import pyplot as plt
-from visualiseData import separateData, generateHeatMap, clusterData, kMeansClustering
 import matplotlib.patches as mpatches
+from matplotlib import pyplot as plt
+from visualiseData import separateData
 
 
 def connectDB():
@@ -21,11 +21,11 @@ def connectDB():
 
     :return: database connection object
     """
-    host = 'localhost'
-    username = 'postgres'
-    password = DB_PASSWORD
-    port = '5432'
-    database = DB_NAME
+    host = config_template.HOST
+    username = config_template.USERNAME
+    password = config_template.DB_PASSWORD
+    port = config_template.PORT
+    database = config_template.DB_NAME
 
     try:
         # Attempt to connect to the existing database
@@ -109,7 +109,8 @@ def twelveDaysWithMostAccidentsIn2020(connection):
     connection.cursor().close()
     print(
         "7. In the year 2020, which 12 days had the most accidents?\nCan you speculate about why this is?")
-    print("Ans: ", ", ".join(str(date_object) for date_object, number in result))
+    print("Ans: ",
+          ", ".join(str(date_object) for date_object, number in result))
 
 
 def top100ConsecutiveDaysWithMostAccidents(connection):
@@ -280,21 +281,29 @@ def plot_time_series_for_accidents(region_accidents_count_2019,
     plt.grid(True)
     plt.show()
 
-def dataDifferenceBetweenYearsForGivenMonths(data_2019, data_2020, month):
-    accidents_2019 = data_2019.groupby('zip_code').size().reset_index(name='accident_count_2019')
-    accidents_2020 = data_2020.groupby('zip_code').size().reset_index(name='accident_count_2020')
 
-    merged_data = pd.merge(accidents_2019, accidents_2020, on='zip_code', how='outer').fillna(0)
+def dataDifferenceBetweenYearsForGivenMonths(data_2019, data_2020, month):
+    accidents_2019 = data_2019.groupby('zip_code').size().reset_index(
+        name='accident_count_2019')
+    accidents_2020 = data_2020.groupby('zip_code').size().reset_index(
+        name='accident_count_2020')
+
+    merged_data = pd.merge(accidents_2019, accidents_2020, on='zip_code',
+                           how='outer').fillna(0)
 
     # Create a bar chart
     bar_width = 0.35  # Width of each bar
     index = merged_data.index
 
-    plt.bar(index, merged_data['accident_count_2019'], width=bar_width, label='Year 2019', color='blue')
-    plt.bar(index + bar_width, merged_data['accident_count_2020'], width=bar_width, label='Year 2020', color='green')
+    plt.bar(index, merged_data['accident_count_2019'], width=bar_width,
+            label='Year 2019', color='blue')
+    plt.bar(index + bar_width, merged_data['accident_count_2020'],
+            width=bar_width, label='Year 2020', color='green')
 
     # Customize the plot
-    plt.title('Accidents by Zipcode - Comparison Between {0} 2019 and {0} 2020'.format(month))
+    plt.title(
+        'Accidents by Zipcode - Comparison Between {0} 2019 and {0} 2020'.format(
+            month))
     plt.xlabel('Zipcode')
     plt.ylabel('Number of Accidents')
     plt.xticks(index + bar_width / 2, merged_data['zip_code'], rotation=90)
@@ -302,6 +311,7 @@ def dataDifferenceBetweenYearsForGivenMonths(data_2019, data_2020, month):
     plt.grid(axis='y')
 
     plt.show()
+
 
 def main():
     """
@@ -311,24 +321,37 @@ def main():
     warnings.filterwarnings("ignore",
                             message="pandas only supports SQLAlchemy connectable.*")
     dataframe = pd.read_sql("SELECT * FROM clean_nyc_crashes", conn)
+
     crash_data_2019, crash_data_2020 = separateData(dataframe)
-    summer_2019 = crash_data_2019[crash_data_2019['crash_date'].dt.month.isin([6,7])].copy()
-    summer_2020 = crash_data_2020[crash_data_2020['crash_date'].dt.month.isin([6,7])].copy()
 
-    june_2019 = crash_data_2019[crash_data_2019['crash_date'].dt.month.isin([6])].copy()
-    june_2020 = crash_data_2020[crash_data_2020['crash_date'].dt.month.isin([6])].copy()
+    summer_2019 = crash_data_2019[
+        crash_data_2019['crash_date'].dt.month.isin([6, 7])].copy()
+    summer_2020 = crash_data_2020[
+        crash_data_2020['crash_date'].dt.month.isin([6, 7])].copy()
 
-    july_2019 = crash_data_2019[crash_data_2019['crash_date'].dt.month.isin([7])].copy()
-    july_2020 = crash_data_2020[crash_data_2020['crash_date'].dt.month.isin([7])].copy()
+    june_2019 = crash_data_2019[
+        crash_data_2019['crash_date'].dt.month.isin([6])].copy()
+    june_2020 = crash_data_2020[
+        crash_data_2020['crash_date'].dt.month.isin([6])].copy()
+
+    july_2019 = crash_data_2019[
+        crash_data_2019['crash_date'].dt.month.isin([7])].copy()
+    july_2020 = crash_data_2020[
+        crash_data_2020['crash_date'].dt.month.isin([7])].copy()
 
     dataDifferenceBetweenYearsForGivenMonths(june_2019, june_2020, 'June')
     dataDifferenceBetweenYearsForGivenMonths(july_2019, july_2020, 'July')
 
     dataChangeByZipcodeFromTwoYears(summer_2019, summer_2020)
+
     dataChangeByTimeFrameFromTwoYears(summer_2019, summer_2020)
+
     top100ConsecutiveDaysWithMostAccidents(conn)
+
     dayWithMostAccidents(conn)
+
     hourWithMostAccidents(conn)
+
     twelveDaysWithMostAccidentsIn2020(conn)
 
 

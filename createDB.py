@@ -20,10 +20,10 @@ def databaseConnection():
 
     :return: database connection object
     """
-    host = 'localhost'
-    username = 'postgres'
+    host = config_template.HOST
+    username = config_template.USERNAME
     password = config_template.DB_PASSWORD
-    port = '5432'
+    port = config_template.PORT
     database = config_template.DB_NAME
 
     try:

@@ -21,10 +21,10 @@ def connectDB():
 
     :return: database connection object
     """
-    host = 'localhost'
-    username = 'postgres'
+    host = config_template.HOST
+    username = config_template.USERNAME
     password = config_template.DB_PASSWORD
-    port = '5432'
+    port = config_template.PORT
     database = config_template.DB_NAME
 
     try:
@@ -140,7 +140,7 @@ def wipeOldTable(connection):
         connection.commit()
         cursor.close()
     else:
-        print(f"Table '{table_name}' does not exist.")
+        print(f"Table '{table_name}' does not exist. One will be created to store clean data")
 
 
 def cleanData(connection, borough):
