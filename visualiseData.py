@@ -13,6 +13,7 @@ from branca.colormap import linear
 from sklearn.cluster import KMeans
 from folium.plugins import HeatMap
 from folium.plugins import MarkerCluster
+import config_template
 
 
 def connectDB():
@@ -25,9 +26,9 @@ def connectDB():
     """
     host = 'localhost'
     username = 'postgres'
-    password = 'Archit@2904'
+    password = config_template.DB_PASSWORD
     port = '5432'
-    database = 'db_720'
+    database = config_template.DB_NAME
 
     try:
         # Attempt to connect to the existing database
@@ -173,6 +174,46 @@ def kMeansClustering(data, year):
     plt.ylabel('Latitude')
     plt.show()
 
+def categorize_vehicle(vehicle_type_code):
+    if vehicle_type_code.lower() in ['bike', 'motorcycle']:
+        return 'bike'
+    else:
+        return vehicle_type_code.lower()
+
+def accidentsByVehicleType(data_2019):
+    # Flatten the DataFrame into a single column
+    flattened_df = data_2019[['vehicle_type_code_1', 'vehicle_type_code_2', 'vehicle_type_code_3', 'vehicle_type_code_4',]].stack().reset_index(name='vehicle_type_code')
+
+    # Categorize vehicles and filter out non-bike vehicles
+    flattened_df['vehicle'] = flattened_df['vehicle_type_code'].apply(categorize_vehicle)
+
+    # Group by vehicle type and count accidents
+    accident_counts = flattened_df.groupby('vehicle')['vehicle'].count()
+
+    # Sort by accident count in descending order and limit to top 10
+    accident_counts = accident_counts.sort_values(ascending=False).head(10)
+
+    # returning the results
+    return accident_counts
+
+def accidentsByVehicleTypeBarChart(accidents_count_2019, accidents_count_2020):
+    fig, axs = plt.subplots(1, 2, figsize=(12, 6))
+    axs[0].bar(accidents_count_2019.index, accidents_count_2019.values)
+    axs[0].set_xticklabels(accidents_count_2019.index,rotation=90)
+    axs[0].set_xlabel('Accidents By Vehicle')
+    axs[0].set_ylabel('Number of Accidents')
+    axs[0].set_title('Year 2019')
+
+    # Plot second bar chart
+    axs[1].bar(accidents_count_2020.index, accidents_count_2020.values)
+    axs[1].set_xticklabels(accidents_count_2020.index,rotation=90)
+    axs[1].set_xlabel('Accidents By Vehicle')
+    axs[1].set_ylabel('Number of Accidents')
+    axs[1].set_title('Year 2020')
+
+    # Adjust layout and show plot
+    plt.tight_layout()
+    plt.show()
 
 def main():
     dataframe = connectDB()
@@ -187,6 +228,7 @@ def main():
     clusterData(crash_data_2019, '2020')
     kMeansClustering(crash_data_2019, '2019')
     kMeansClustering(crash_data_2020, '2020')
+    accidentsByVehicleTypeBarChart(accidentsByVehicleType(crash_data_2019), accidentsByVehicleType(crash_data_2020))
 
 
 if __name__ == "__main__":
