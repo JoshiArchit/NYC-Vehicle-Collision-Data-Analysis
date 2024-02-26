@@ -13,7 +13,7 @@ The above data pool contains over a million records. Due to hardware and time-co
 
 # The Objective
 <aside>
-🗯️ **We aim to design a solution to extract, clean and efficiently store this data so that it can be queried intelligently using SQL. Through this process of data mining we answer the below fundamental questions -**
+🗯️ We aim to design a solution to extract, clean and efficiently store this data so that it can be queried intelligently using SQL. Through this process of data mining we answer the below fundamental questions -
 
 1. For the two years given, figure out what has changed in the summer from one year to the next.
 Figure out how to visualize the difference, in some way.
