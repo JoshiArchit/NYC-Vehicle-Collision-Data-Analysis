@@ -1,5 +1,6 @@
-# CSCI720-Big-Data-Analytics-Project
-CSCI720-Big Data Analytics Project
+# NYC Vehicle Collision Data Analysis
+Term Project, CSCI720 - Big Data Analytics<br>
+Rochester Institute of Technology, Fall 2023
 
 # The Idea
 <aside>
